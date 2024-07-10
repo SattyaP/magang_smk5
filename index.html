@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div>
+        <form id="form">
+            <label for="nama">Nama:</label>
+            <input type="text" id="nama" name="nama"><br><br>
+
+            <label for="kelas">Kelas:</label>
+            <input type="text" id="kelas" name="kelas"><br><br>
+
+            <label for="asal">Asal Sekolah:</label>
+            <input type="text" id="asal" name="asal"><br><br>
+
+            <label for="cita">Cita Cita:</label>
+            <input type="text" id="cita" name="cita"><br><br>
+
+            <button type="submit" id="btn">Submit</button>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('form');
+
+        function validateInput() {
+            const nama = document.getElementById('nama').value;
+            const kelas = document.getElementById('kelas').value;
+            const asal = document.getElementById('asal').value;
+            const cita = document.getElementById('cita').value;
+
+            if (nama === '' || kelas === '' || asal === '' || cita === '') {
+                alert('Isi semua');
+                return false;
+            } else {
+                console.log("Nama: " + nama);
+                console.log("Kelas: " + kelas);
+                console.log("Asal Sekolah: " + asal);
+                console.log("Cita Cita: " + cita);
+                return true;
+            }
+        }
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault(); 
+
+            if (validateInput()) {
+                // alert('Di isi semua');
+
+                // form.reset();
+            }
+        });
+    </script>
+</body>
+
+</html>
