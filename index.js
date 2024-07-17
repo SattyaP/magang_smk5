@@ -132,7 +132,7 @@ const handleBuster = async (page) => {
       document.querySelector("body > div.v-overlay-container > div:nth-child(1) > div > div > div:nth-child(2)").click()
     })
     const fieldApi = await page.waitForSelector('#input-22')
-    fieldApi && await fieldApi.type('AIzaSyCszmdIs6n-Un2tVQlPj41aWmVuPvNp-e0')
+    fieldApi && await fieldApi.type(process.env.APIKEY)
   } catch (error) {
     throw error;
   }
