@@ -1,3 +1,4 @@
+require('dotenv').config()
 const {
   executablePath
 } = require("puppeteer");
@@ -8,10 +9,6 @@ const pluginStealth = require("puppeteer-extra-plugin-stealth");
 puppeteer.use(pluginStealth());
 
 const captcha = path.join(process.cwd(), "./extension/captcha/");
-
-/**
- * TODO: Get url /20 
- */
 
 const proccess = async () => {
   const browser = await puppeteer.launch({
@@ -25,15 +22,11 @@ const proccess = async () => {
   const page = await browser.newPage();
   page.sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
-  page.on("response", (response) => {
-    const request = response.request();
-    if (
-      request.resourceType() === "xhr" &&
-      request.url().includes("https://guestpostlinks.net/wp-admin/admin-ajax.php")
-    ) {
-      response.text().then((text) => console.log("Body", text));
-    }
-  })
+  page.sleep = function (timeout) {
+    return new Promise(function (resolve) {
+      setTimeout(resolve, timeout);
+    });
+  };
 
   try {
     await handleBuster(page)
@@ -43,13 +36,12 @@ const proccess = async () => {
       timeout: 120000,
     });
 
-    await page.waitForSelector("#dapa_link");
-    await page.$eval(
-      "#dapa_link",
-      (el) => (el.value = "https://guestpostlinks.net/")
-    );
+    const fileContent = fs.readFileSync('./list.txt', 'utf8').trim();
+    await page.type('#dapa_link', fileContent);
 
-    console.log("Check captcha ...");
+    await page.sleep(10000);
+
+    console.log("Check captcha....");
     await page.waitForSelector('iframe[title="reCAPTCHA"]')
     let frames = await page.frames();
     const recaptchaFrame = frames.find(frame => frame.url().includes('api2/anchor'));
@@ -59,28 +51,48 @@ const proccess = async () => {
       delay: rdn(30, 150)
     });
 
-    /**
-     * TODO: Mengkondisikan apabila ada modal kotak itu click solver dibawah kalo ngga ada langsung ke  click submit
-     */
-    
-    // CLICK SOLVER ORANGE
-    // frames = await page.frames();
-    // const imageFrame = frames.find(frame => frame.url().includes('api2/bframe'));
-    // const busterSolver = await imageFrame.$('#solver-button');
-    // await busterSolver.click({
-    //   delay: rdn(30, 150)
-    // });
-
     console.log("Solve captcha....");
+
+    /**
+     * TODO: Mengkondisikan apabila ada kotak puzzle captcha maka di click menggunakan solver dibawah jika tidak ada langsung click submit
+     */
+
+    const iframe = await page.waitForSelector('iframe[title="recaptcha challenge expires in two minutes"]');
+
+    if (iframe) {
+      const iframeContent = await iframe.contentFrame();
+      const body = await iframeContent.waitForSelector('body');
+
+      frames = await page.frames();
+      const imageFrame = frames.find(frame => frame.url().includes('api2/bframe'));
+      const busterSolver = await imageFrame.$('#solver-button');
+      await busterSolver.click({
+        delay: rdn(30, 150)
+      });
+    }
 
     const submit = await page.waitForSelector(
       'button[type="submit"][id="DAPAformsend"]'
     );
     await submit.click();
 
+    await page.sleep(5000);
+
+    await page.waitForSelector("#dapa_tbl > tbody tr > td:not(:last-child):not(:nth-child(1)")
+
+    const data = await page.evaluate(() => {
+      const rows = document.querySelectorAll('#dapa_tbl > tbody tr > td:not(:last-child):not(:nth-child(1)');
+      const data = [];
+      rows.forEach((row) => {
+        data.push(row.innerText);
+      });
+      return data;
+    });
+    console.log(data);
+
   } catch (error) {
     console.log("Error", error);
-    await browser.close();
+    // await browser.close();
   }
 };
 

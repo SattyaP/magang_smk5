@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "fs": "^0.0.1-security",
     "puppeteer": "^22.13.0",
     "puppeteer-captcha-solver": "^1.0.3",
